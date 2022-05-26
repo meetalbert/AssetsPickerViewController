@@ -128,6 +128,11 @@ open class AssetsPickerConfig : NSObject {
         return CGSize(width: edge, height: edge)
     }
     
+    // MARK: - Manager Settings
+  
+    /// Flag that determines if a user can crop a selected photo
+    open var allowsEditing: Bool = true
+  
     public override init() {}
     
     @discardableResult
