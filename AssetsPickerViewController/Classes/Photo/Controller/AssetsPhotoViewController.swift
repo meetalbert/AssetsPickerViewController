@@ -161,6 +161,8 @@ open class AssetsPhotoViewController: UIViewController {
                 self.delegate?.assetsPickerCannotAccessPhotoLibrary?(controller: self.picker)
             }
         }
+      
+        cameraPicker.setAllowsEditing(shouldAllow: pickerConfig.allowsEditing)
     }
     
     override open func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
