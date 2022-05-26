@@ -131,7 +131,7 @@ open class AssetsPickerConfig : NSObject {
     // MARK: - Manager Settings
   
     /// Flag that determines if a user can crop a selected photo
-    open var allowsEditing: Bool = false
+    open var allowsEditing: Bool = true
   
     public override init() {}
     
