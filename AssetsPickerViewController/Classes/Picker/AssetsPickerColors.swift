@@ -6,6 +6,7 @@
 //
 import UIKit
 
+/// Class to hold color values for Picker elements.
 public struct AssetsPickerColors {
   var defaultCheckmark: UIColor
   var label: UIColor
