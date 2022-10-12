@@ -113,7 +113,7 @@ open class AssetsPreviewController: UIViewController {
     override open func loadView() {
         super.loadView()
         view = UIView()
-        view.backgroundColor = .ap_background
+        view.backgroundColor = AssetsManager.shared.pickerConfig.colors.background
         view.addSubview(imageView)
         if #available(iOS 9.1, *) {
             view.addSubview(livePhotoView)

@@ -48,9 +48,10 @@ open class AssetsGuideView: UIView {
         let titleParagraphStyle = NSMutableParagraphStyle()
         titleParagraphStyle.paragraphSpacing = lineSpace
         titleParagraphStyle.alignment = .center
+        let secondaryLabelColor = AssetsManager.shared.pickerConfig.colors.secondaryLabel
         let attributedTitle = NSMutableAttributedString(string: "\(title)\n", attributes: [
             NSAttributedString.Key.font: UIFont.systemFont(forStyle: titleStyle),
-			NSAttributedString.Key.foregroundColor: UIColor.ap_secondaryLabel,
+            NSAttributedString.Key.foregroundColor: secondaryLabelColor,
             NSAttributedString.Key.paragraphStyle: titleParagraphStyle
             ])
         
@@ -61,7 +62,7 @@ open class AssetsGuideView: UIView {
         bodyParagraphStyle.tailIndent = -20
         let attributedBody = NSMutableAttributedString(string: message, attributes: [
             NSAttributedString.Key.font: UIFont.systemFont(forStyle: bodyStyle),
-			NSAttributedString.Key.foregroundColor: UIColor.ap_secondaryLabel,
+			NSAttributedString.Key.foregroundColor: secondaryLabelColor,
             NSAttributedString.Key.paragraphStyle: bodyParagraphStyle
             ])
         

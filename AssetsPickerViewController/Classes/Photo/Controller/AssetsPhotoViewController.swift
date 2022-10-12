@@ -127,7 +127,7 @@ open class AssetsPhotoViewController: UIViewController {
     override open func loadView() {
         super.loadView()
         view = UIView()
-		view.backgroundColor = .ap_background
+        view.backgroundColor = AssetsManager.shared.pickerConfig.colors.background
         view.addSubview(collectionView)
         view.addSubview(emptyView)
         view.addSubview(noPermissionView)

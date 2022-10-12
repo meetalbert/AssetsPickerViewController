@@ -17,7 +17,9 @@ open class AssetsPickerConfig : NSObject {
     public static var customStringConfig: AssetsPickerCustomStringConfig? = nil
     
     // MARK: - Album Config
-    
+
+    public var colors: AssetsPickerColors = AssetsPickerColors()
+
     /// Static appearances
     public static var statusBarStyle: UIStatusBarStyle = .default
     public static var defaultCheckmarkColor: UIColor = UIColor(red: 0.078, green: 0.435, blue: 0.875, alpha: 1)
