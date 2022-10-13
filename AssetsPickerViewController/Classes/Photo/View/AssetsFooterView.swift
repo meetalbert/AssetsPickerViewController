@@ -14,7 +14,7 @@ open class AssetsPhotoFooterView: UICollectionReusableView {
         let label = UILabel()
         label.textAlignment = .center
         label.font = UIFont.systemFont(forStyle: .subheadline, weight: .semibold)
-        label.textColor = .ap_label
+        label.textColor = AssetsManager.shared.pickerConfig.colors.label
         return label
     }()
     

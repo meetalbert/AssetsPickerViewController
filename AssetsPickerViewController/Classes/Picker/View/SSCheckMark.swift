@@ -54,7 +54,7 @@ open class SSCheckMark: UIView {
     func drawRectChecked(rect: CGRect) {
         guard let context = UIGraphicsGetCurrentContext() else { return }
         
-        let checkmarkColor = AssetsPickerConfig.defaultCheckmarkColor
+        let checkmarkColor = AssetsManager.shared.pickerConfig.colors.defaultCheckmark
         let shadow2 = UIColor.black
         
         let shadow2Offset = CGSize(width: 0.1, height: -0.1)

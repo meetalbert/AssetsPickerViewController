@@ -28,7 +28,7 @@ open class AssetsAlbumCell: UICollectionViewCell, AssetsAlbumCellProtocol {
     
     public let imageView: UIImageView = {
         let view = UIImageView()
-        view.backgroundColor = .ap_cellBackground
+        view.backgroundColor = AssetsManager.shared.pickerConfig.colors.cellBackground
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
         view.layer.cornerRadius = 5
@@ -50,14 +50,14 @@ open class AssetsAlbumCell: UICollectionViewCell, AssetsAlbumCellProtocol {
     // MARK: - Views
     fileprivate let titleLabel: UILabel = {
         let label = UILabel()
-        label.textColor = .ap_label
+        label.textColor = AssetsManager.shared.pickerConfig.colors.label
         label.font = UIFont.systemFont(forStyle: .subheadline)
         return label
     }()
     
     fileprivate let countLabel: UILabel = {
         let label = UILabel()
-		label.textColor = .ap_secondaryLabel
+        label.textColor = AssetsManager.shared.pickerConfig.colors.secondaryLabel
         label.font = UIFont.systemFont(forStyle: .subheadline)
         return label
     }()

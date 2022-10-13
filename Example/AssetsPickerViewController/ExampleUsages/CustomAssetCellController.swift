@@ -78,7 +78,7 @@ class CustomAssetCell: UICollectionViewCell, AssetsPhotoCellProtocol {
         let view = UIImageView()
         view.clipsToBounds = true
         view.contentMode = .scaleAspectFill
-        view.backgroundColor = UIColor(rgbHex: 0xF0F0F0)
+        view.backgroundColor = AssetsManager.shared.pickerConfig.colors.cellBackground
         return view
     }()
     

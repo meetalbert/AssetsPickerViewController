@@ -45,7 +45,7 @@ open class AssetsPhotoCell: UICollectionViewCell, AssetsPhotoCellProtocol {
     
     public let imageView: UIImageView = {
         let view = UIImageView()
-        view.backgroundColor = UIColor(rgbHex: 0xF0F0F0)
+        view.backgroundColor = AssetsManager.shared.pickerConfig.colors.cellBackground
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
         return view
