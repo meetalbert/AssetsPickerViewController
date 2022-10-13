@@ -94,7 +94,7 @@ open class AssetsAlbumViewController: UIViewController {
     open override func loadView() {
         super.loadView()
         view = UIView()
-        view.backgroundColor = AssetsManager.shared.pickerConfig.colors.background
+        view.backgroundColor = pickerConfig.colors.background
         
         view.addSubview(collectionView)
         view.addSubview(loadingPlaceholderView)
@@ -156,7 +156,7 @@ open class AssetsAlbumViewController: UIViewController {
 extension AssetsAlbumViewController {
     func setupCommon() {
         title = String(key: "Title_Albums")
-        view.backgroundColor = AssetsManager.shared.pickerConfig.colors.background
+        view.backgroundColor = pickerConfig.colors.background
     }
     
     func setupBarButtonItems() {
@@ -271,7 +271,7 @@ extension AssetsAlbumViewController: UICollectionViewDataSource {
         }
         albumCell.imageView.dmr_dim(
           animated: false,
-          color: AssetsManager.shared.pickerConfig.colors.label,
+          color: pickerConfig.colors.label,
           alpha: 0.5
         )
         return true

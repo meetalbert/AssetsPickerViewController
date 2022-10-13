@@ -7,6 +7,7 @@
 import UIKit
 
 /// Class to hold color values for Picker elements.
+/// Note: it provides default values and use semantic values for iOS13+.
 public struct AssetsPickerColors {
   var defaultCheckmark: UIColor
   var label: UIColor
@@ -21,14 +22,14 @@ public struct AssetsPickerColors {
     background: UIColor? = nil,
     cellBackground: UIColor? = nil
   ) {
-    self.defaultCheckmark = defaultCheckmark ?? defaultColors.defaultCheckmark
-    self.label = label ?? defaultColors.label
-    self.secondaryLabel = secondaryLabel ?? defaultColors.secondaryLabel
-    self.background = background ?? defaultColors.background
-    self.cellBackground = cellBackground ?? defaultColors.cellBackground
+    self.defaultCheckmark = DefaultColors ?? DefaultColors.defaultCheckmark
+    self.label = label ?? DefaultColors.label
+    self.secondaryLabel = secondaryLabel ?? DefaultColors.secondaryLabel
+    self.background = background ?? DefaultColors.background
+    self.cellBackground = cellBackground ?? DefaultColors.cellBackground
   }
   
-  struct defaultColors {
+  struct DefaultColors {
     static var defaultCheckmark : UIColor {
       UIColor(red: 0.078, green: 0.435, blue: 0.875, alpha: 1)
     }

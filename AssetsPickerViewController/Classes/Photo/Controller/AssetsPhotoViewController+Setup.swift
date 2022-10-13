@@ -11,7 +11,7 @@ import UIKit
 extension AssetsPhotoViewController {
     
     func setupCommon() {
-        view.backgroundColor = AssetsManager.shared.pickerConfig.colors.background
+        view.backgroundColor = pickerConfig.colors.background
         cameraPicker.delegate = self
     }
     

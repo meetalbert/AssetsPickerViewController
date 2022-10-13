@@ -28,7 +28,7 @@ open class AssetsAlbumCell: UICollectionViewCell, AssetsAlbumCellProtocol {
     
     public let imageView: UIImageView = {
         let view = UIImageView()
-      view.backgroundColor = AssetsManager.shared.pickerConfig.colors.cellBackground
+        view.backgroundColor = AssetsManager.shared.pickerConfig.colors.cellBackground
         view.contentMode = .scaleAspectFill
         view.clipsToBounds = true
         view.layer.cornerRadius = 5
