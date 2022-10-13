@@ -22,7 +22,7 @@ public struct AssetsPickerColors {
     background: UIColor? = nil,
     cellBackground: UIColor? = nil
   ) {
-    self.defaultCheckmark = DefaultColors ?? DefaultColors.defaultCheckmark
+    self.defaultCheckmark = defaultCheckmark ?? DefaultColors.defaultCheckmark
     self.label = label ?? DefaultColors.label
     self.secondaryLabel = secondaryLabel ?? DefaultColors.secondaryLabel
     self.background = background ?? DefaultColors.background
