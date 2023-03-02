@@ -10,10 +10,12 @@ import AVFoundation
 import Photos
 import UIKit
 
+@MainActor
 protocol AssetsPickerManagerDelegate: NSObject {
     func assetsPickerManagerSavedAsset(identifier: String)
 }
 
+@MainActor
 class AssetsPickerManager: NSObject {
     
     fileprivate var successCallback: ((Any?) -> Void)?

@@ -71,7 +71,8 @@ open class AssetsPickerConfig : NSObject {
     open var albumLandscapeForcedCellWidth: CGFloat?
     open var albumLandscapeForcedCellHeight: CGFloat?
     open var albumLandscapeCellSize: CGSize = .zero
-    
+
+    @MainActor
     func albumItemSpace(isPortrait: Bool) -> CGFloat {
         let size = isPortrait ? UIScreen.main.portraitSize : UIScreen.main.landscapeSize
         let count = CGFloat(isPortrait ? (albumPortraitColumnCount ?? albumPortraitDefaultColumnCount) : albumLandscapeColumnCount ?? albumLandscapeDefaultColumnCount)
@@ -136,7 +137,8 @@ open class AssetsPickerConfig : NSObject {
     open var allowsEditing: Bool = true
   
     public override init() {}
-    
+
+    @MainActor
     @discardableResult
     open func prepare() -> Self {
         

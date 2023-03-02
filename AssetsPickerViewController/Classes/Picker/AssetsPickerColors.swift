@@ -13,7 +13,7 @@ public struct AssetsPickerColors {
   var label: UIColor
   var secondaryLabel: UIColor
   var background: UIColor
-  var cellBackground: UIColor
+  public var cellBackground: UIColor
   
   public init(
     defaultCheckmark: UIColor? = nil,

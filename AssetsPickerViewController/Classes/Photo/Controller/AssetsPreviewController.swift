@@ -147,9 +147,20 @@ open class AssetsPreviewController: UIViewController {
     }
     
     deinit {
-        player?.pause()
+// TODO: test this live
         logd("Released \(type(of: self))")
     }
+
+  open override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    player?.pause()
+  }
+
+  open override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    player?.play()
+  }
+
 }
 
 extension AssetsPreviewController {
@@ -199,9 +210,9 @@ extension AssetsPreviewController {
 
 extension AssetsPreviewController: PHLivePhotoViewDelegate {
     @available(iOS 9.1, *)
-    public func livePhotoView(_ livePhotoView: PHLivePhotoView, willBeginPlaybackWith playbackStyle: PHLivePhotoViewPlaybackStyle) {}
+    nonisolated public func livePhotoView(_ livePhotoView: PHLivePhotoView, willBeginPlaybackWith playbackStyle: PHLivePhotoViewPlaybackStyle) {}
     
     @available(iOS 9.1, *)
-    public func livePhotoView(_ livePhotoView: PHLivePhotoView, didEndPlaybackWith playbackStyle: PHLivePhotoViewPlaybackStyle) {}
+    nonisolated public func livePhotoView(_ livePhotoView: PHLivePhotoView, didEndPlaybackWith playbackStyle: PHLivePhotoViewPlaybackStyle) {}
 }
 

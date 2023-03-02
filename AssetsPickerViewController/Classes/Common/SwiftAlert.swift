@@ -8,6 +8,7 @@
 
 import UIKit
 
+@MainActor
 @available(iOS 8.0, *)
 @objcMembers public class SwiftAlert: NSObject {
     
