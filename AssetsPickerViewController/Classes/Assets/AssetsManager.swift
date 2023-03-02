@@ -10,7 +10,7 @@ import UIKit
 import Photos
 
 // MARK: - AssetsManagerDelegate
-public protocol AssetsManagerDelegate: class {
+public protocol AssetsManagerDelegate: AnyObject {
     
     func assetsManager(manager: AssetsManager, authorizationStatusChanged oldStatus: PHAuthorizationStatus, newStatus: PHAuthorizationStatus)
     func assetsManager(manager: AssetsManager, reloadedAlbumsInSection section: Int)
@@ -32,6 +32,7 @@ typealias AssetsAlbumArrayEntry = (fetchedAlbumsArray: [[PHAssetCollection]], so
 
 // MARK: - AssetsManager
 open class AssetsManager: NSObject {
+    typealias AlbumsArrayAndEntry = (albumsArrayEntry: AssetsAlbumEntry, fetchedEntry: AssetsFetchEntry)
     
     public static let shared = AssetsManager()
     
@@ -484,8 +485,7 @@ extension AssetsManager {
             authorizationStatus = newStatus
             if newStatus == .limited {
                 for subscriber in self.subscribers {
-                    DispatchQueue.main.async { [weak self] in
-                        guard let `self` = self else { return }
+                    Task { @MainActor [newStatus] in
                         subscriber.assetsManager(manager: self, authorizationStatusChanged: oldStatus, newStatus: newStatus)
                     }
                 }
@@ -496,12 +496,13 @@ extension AssetsManager {
             if authorizationStatus != newStatus {
                 let oldStatus = authorizationStatus
                 authorizationStatus = newStatus
-                DispatchQueue.main.async { [weak self] in
-                    guard let `self` = self else { return }
-                    for subscriber in self.subscribers {
-                        subscriber.assetsManager(manager: self, authorizationStatusChanged: oldStatus, newStatus: newStatus)
-                    }
+
+              let authorizationworkItem = DispatchWorkItem {
+                for subscriber in self.subscribers {
+                    subscriber.assetsManager(manager: self, authorizationStatusChanged: oldStatus, newStatus: newStatus)
                 }
+              }
+              DispatchQueue.main.async(execute: authorizationworkItem)
             }
         }
         
@@ -607,42 +608,56 @@ extension AssetsManager {
             }
         }
     }
-    
-    func fetchAllAlbums(types: [PHAssetCollectionType], complection: @escaping (AssetsAlbumArrayEntry) -> Void ) {
-        
-        let queue = DispatchQueue.global(qos: .userInitiated)
-        
+
+    func fetchAlbumsAndEntry(albumType: PHAssetCollectionType) async -> AlbumsArrayAndEntry {
+      return await withCheckedContinuation{ continuation in
+        fetchAlbumsAsync(forAlbumType: albumType, complection: { (albumsArrayEntry, fetchedEntry) in
+          continuation.resume(returning: AlbumsArrayAndEntry(albumsArrayEntry, fetchedEntry))
+        })
+      }
+    }
+
+
+    func fetchAllAlbums(types: [PHAssetCollectionType], completion: @escaping (AssetsAlbumArrayEntry) -> Void ) {
+      // TODO: add doc
+      Task {
+        let entryResults: [AlbumsArrayAndEntry] = await withTaskGroup(of: AlbumsArrayAndEntry.self) { group in
+          var entries = [AlbumsArrayAndEntry]()
+
+          for type in types {
+            group.addTask {
+              return await self.fetchAlbumsAndEntry(albumType: type)
+            }
+          }
+
+          for await entry in group {
+            entries.append(entry)
+          }
+
+          return entries
+        }
+
         var fetchedAlbumsArray: [[PHAssetCollection]] = []
         var sortedAlbumsArray: [[PHAssetCollection]] = []
         var albumsFetchArray: [PHFetchResult<PHAssetCollection>] = []
-        
-        let group = DispatchGroup()
-        
         var fetchMap = [String: PHFetchResult<PHAsset>]()
         var albumMap = [String: PHAssetCollection]()
-        
-        for type in types {
-            queue.async(group: group) {
-                group.enter()
-                self.fetchAlbumsAsync(forAlbumType: type) { (albumsArrayEntry, fetchedEntry) in
-                    fetchedAlbumsArray.append(albumsArrayEntry.fetchedAlbums)
-                    sortedAlbumsArray.append(albumsArrayEntry.sortedAlbums)
-                    albumsFetchArray.append(albumsArrayEntry.fetchResult)
-                    
-                    fetchMap = fetchMap.merging(fetchedEntry.fetchMap) { (first, second) -> PHFetchResult<PHAsset> in return first }
-                    albumMap = albumMap.merging(fetchedEntry.albumMap) { (first, second) -> PHAssetCollection in return first }
-                    
-                    group.leave()
-                }
-            }
+
+        for entry in entryResults {
+          fetchedAlbumsArray.append(entry.albumsArrayEntry.fetchedAlbums)
+          sortedAlbumsArray.append(entry.albumsArrayEntry.sortedAlbums)
+          albumsFetchArray.append(entry.albumsArrayEntry.fetchResult)
+
+          fetchMap = fetchMap.merging(entry.fetchedEntry.fetchMap) { (first, second) -> PHFetchResult<PHAsset> in return first }
+          albumMap = albumMap.merging(entry.fetchedEntry.albumMap) { (first, second) -> PHAssetCollection in return first }
         }
-        
-        group.notify(queue: .main) {
-            self.fetchMap = fetchMap
-            self.albumMap = albumMap
-            let result = (fetchedAlbumsArray, sortedAlbumsArray, albumsFetchArray)
-            complection(result)
-        }
+
+        self.fetchMap = fetchMap
+        self.albumMap = albumMap
+        let result = (fetchedAlbumsArray, sortedAlbumsArray, albumsFetchArray)
+        completion(result)
+
+      }
     }
     
     open func fetchAssets(isRefetch: Bool = false, completion: ((PHFetchResult<PHAsset>?) -> Void)? = nil) {
