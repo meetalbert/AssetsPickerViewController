@@ -147,20 +147,13 @@ open class AssetsPreviewController: UIViewController {
     }
     
     deinit {
-// TODO: test this live
         logd("Released \(type(of: self))")
     }
 
-  open override func viewWillDisappear(_ animated: Bool) {
-    super.viewWillDisappear(animated)
-    player?.pause()
-  }
-
-  open override func viewWillAppear(_ animated: Bool) {
-    super.viewWillAppear(animated)
-    player?.play()
-  }
-
+    open override func viewWillDisappear(_ animated: Bool) {
+      super.viewWillDisappear(animated)
+      player?.pause()
+    }
 }
 
 extension AssetsPreviewController {
