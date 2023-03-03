@@ -622,9 +622,10 @@ extension AssetsManager {
 
 
   /// Fetches and calls the `completion` closure with the data of all the albums from the five `types`.
+  /// It also updates the`fetchMap` and `albumMap` objects.
   /// - Parameters:
-  ///   - types: <#types description#>
-  ///   - completion: <#completion description#>
+  ///   - types: list of asset collection type.
+  ///   - completion: closure to return an `AssetsAlbumArrayEntry` object with the data.
     func fetchAllAlbums(types: [PHAssetCollectionType], completion: @escaping (AssetsAlbumArrayEntry) -> Void ) {
       Task {
         let entryResults: [AlbumsArrayAndEntry] = await withTaskGroup(of: AlbumsArrayAndEntry.self) { group in
