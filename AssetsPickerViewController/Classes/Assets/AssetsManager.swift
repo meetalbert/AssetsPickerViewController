@@ -496,13 +496,12 @@ extension AssetsManager {
             if authorizationStatus != newStatus {
                 let oldStatus = authorizationStatus
                 authorizationStatus = newStatus
-
-              let authorizationworkItem = DispatchWorkItem {
-                for subscriber in self.subscribers {
-                    subscriber.assetsManager(manager: self, authorizationStatusChanged: oldStatus, newStatus: newStatus)
+                let authorizationworkItem = DispatchWorkItem {
+                  for subscriber in self.subscribers {
+                      subscriber.assetsManager(manager: self, authorizationStatusChanged: oldStatus, newStatus: newStatus)
+                  }
                 }
-              }
-              DispatchQueue.main.async(execute: authorizationworkItem)
+                DispatchQueue.main.async(execute: authorizationworkItem)
             }
         }
         
@@ -621,11 +620,11 @@ extension AssetsManager {
     }
 
 
-  /// Fetches and calls the `completion` closure with the data of all the albums from the five `types`.
-  /// It also updates the`fetchMap` and `albumMap` objects.
-  /// - Parameters:
-  ///   - types: list of asset collection type.
-  ///   - completion: closure to return an `AssetsAlbumArrayEntry` object with the data.
+    /// Fetches and calls the `completion` closure with the data of all the albums from the five `types`.
+    /// It also updates the`fetchMap` and `albumMap` objects.
+    /// - Parameters:
+    ///   - types: list of asset collection type.
+    ///   - completion: closure to return an `AssetsAlbumArrayEntry` object with the data.
     func fetchAllAlbums(types: [PHAssetCollectionType], completion: @escaping (AssetsAlbumArrayEntry) -> Void ) {
       Task {
         let entryResults: [AlbumsArrayAndEntry] = await withTaskGroup(of: AlbumsArrayAndEntry.self) { group in
@@ -663,7 +662,6 @@ extension AssetsManager {
         self.albumMap = albumMap
         let result = (fetchedAlbumsArray, sortedAlbumsArray, albumsFetchArray)
         completion(result)
-
       }
     }
     
