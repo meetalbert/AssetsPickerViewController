@@ -609,6 +609,9 @@ extension AssetsManager {
         }
     }
 
+    /// Calls `fetchAlbumsAsync` and returns all the albums entries for the give album type.
+    /// - Parameter albumType: Asset collection type.
+    /// - Returns: AlbumsArrayAndEntry ( tuple of albumsArrayEntry and fetchedEntry)
     func fetchAlbumsAndEntry(albumType: PHAssetCollectionType) async -> AlbumsArrayAndEntry {
       return await withCheckedContinuation{ continuation in
         fetchAlbumsAsync(forAlbumType: albumType, complection: { (albumsArrayEntry, fetchedEntry) in
@@ -618,8 +621,11 @@ extension AssetsManager {
     }
 
 
+  /// Fetches and calls the `completion` closure with the data of all the albums from the five `types`.
+  /// - Parameters:
+  ///   - types: <#types description#>
+  ///   - completion: <#completion description#>
     func fetchAllAlbums(types: [PHAssetCollectionType], completion: @escaping (AssetsAlbumArrayEntry) -> Void ) {
-      // TODO: add doc
       Task {
         let entryResults: [AlbumsArrayAndEntry] = await withTaskGroup(of: AlbumsArrayAndEntry.self) { group in
           var entries = [AlbumsArrayAndEntry]()
