@@ -9,6 +9,7 @@
 import UIKit
 import Photos
 
+@MainActor
 public protocol AssetsAlbumCellProtocol {
     var album: PHAssetCollection? { get set }
     var isSelected: Bool { get set }

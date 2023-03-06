@@ -11,9 +11,9 @@ import Photos
 // MARK: - AssetsManagerDelegate
 extension AssetsPhotoViewController: AssetsManagerDelegate {
     
-    public func assetsManagerFetched(manager: AssetsManager) {}
+    public func assetsManagerFetched() {}
     
-    public func assetsManager(manager: AssetsManager, authorizationStatusChanged oldStatus: PHAuthorizationStatus, newStatus: PHAuthorizationStatus) {
+    public func assetsManager(authorizationStatusChanged oldStatus: PHAuthorizationStatus, newStatus: PHAuthorizationStatus) {
         if #available(iOS 14, *) {
             if newStatus == .limited {
                 updateNoPermissionView()
@@ -41,33 +41,33 @@ extension AssetsPhotoViewController: AssetsManagerDelegate {
         }
     }
     
-    public func assetsManager(manager: AssetsManager, reloadedAlbumsInSection section: Int) {}
-    public func assetsManager(manager: AssetsManager, insertedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {}
+    public func assetsManager(reloadedAlbumsInSection section: Int) {}
+    public func assetsManager(insertedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {}
     
-    public func assetsManager(manager: AssetsManager, removedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {
+    public func assetsManager(removedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {
         logi("removedAlbums at indexPaths: \(indexPaths)")
-        guard let selectedAlbum = manager.selectedAlbum else {
+        guard let selectedAlbum = AssetsManager.shared.selectedAlbum else {
             logw("selected album is nil.")
             return
         }
         if albums.contains(selectedAlbum) {
-            manager.selectDefaultAlbum()
+            AssetsManager.shared.selectDefaultAlbum()
             updateNavigationStatus()
             updateFooter()
             collectionView.reloadData()
         }
     }
     
-    public func assetsManager(manager: AssetsManager, updatedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {}
-    public func assetsManager(manager: AssetsManager, reloadedAlbum album: PHAssetCollection, at indexPath: IndexPath) {}
+    public func assetsManager(updatedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {}
+    public func assetsManager(reloadedAlbum album: PHAssetCollection, at indexPath: IndexPath) {}
     
-    public func assetsManager(manager: AssetsManager, insertedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {
+    public func assetsManager(insertedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {
         logi("insertedAssets at: \(indexPaths)")
         collectionView.insertItems(at: indexPaths)
         updateFooter()
     }
     
-    public func assetsManager(manager: AssetsManager, removedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {
+    public func assetsManager(removedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {
         logi("removedAssets at: \(indexPaths)")
         for removedAsset in assets {
             if let index = selectedArray.firstIndex(of: removedAsset) {
@@ -81,7 +81,7 @@ extension AssetsPhotoViewController: AssetsManagerDelegate {
         updateFooter()
     }
     
-    public func assetsManager(manager: AssetsManager, updatedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {
+    public func assetsManager(updatedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {
         logi("updatedAssets at: \(indexPaths)")
         let indexPathsToReload = collectionView.indexPathsForVisibleItems.filter { indexPaths.contains($0) }
         

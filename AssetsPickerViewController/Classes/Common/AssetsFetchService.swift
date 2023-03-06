@@ -8,6 +8,7 @@
 import Photos
 
 // MARK: - Image Fetching IDs
+@MainActor
 class AssetsFetchService {
     
     var requestMap = [IndexPath: PHImageRequestID]()

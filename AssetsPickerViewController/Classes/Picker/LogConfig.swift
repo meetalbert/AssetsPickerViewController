@@ -7,6 +7,7 @@
 
 import Foundation
 
+@MainActor
 class LogConfig {
     static var isFetchLogEnabled = true
     static var isCellLogEnabled = false

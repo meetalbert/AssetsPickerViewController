@@ -21,7 +21,7 @@ open class AssetsPickerConfig : NSObject {
     public var colors: AssetsPickerColors = AssetsPickerColors()
 
     /// Static appearances
-    public static var statusBarStyle: UIStatusBarStyle = .default
+    @MainActor public static var statusBarStyle: UIStatusBarStyle = .default
     public static var defaultCheckmarkColor: UIColor = UIColor(red: 0.078, green: 0.435, blue: 0.875, alpha: 1)
 
     /// Set selected album at initial load.
