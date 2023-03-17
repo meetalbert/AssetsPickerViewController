@@ -9,8 +9,6 @@
 import UIKit
 @preconcurrency import Photos
 
-//CHE lo q hay q pensar es si este delegado tiene q estar en el main thread, creo q no porq si
-//bien es usado por los VCs no se si hay q forzarlo, quizas se use por un service?
 // MARK: - AssetsManagerDelegate
 @MainActor
 public protocol AssetsManagerDelegate: AnyObject {
@@ -493,7 +491,7 @@ extension AssetsManager {
                 }
                 return false
             }
-        } else if#available(iOS 13, *) {
+        } else if #available(iOS 13, *) {
             newStatus = PHPhotoLibrary.authorizationStatus()
             if authorizationStatus != newStatus {
               let oldStatus = authorizationStatus
