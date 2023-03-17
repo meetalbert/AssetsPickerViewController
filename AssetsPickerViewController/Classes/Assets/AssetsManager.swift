@@ -7,23 +7,26 @@
 //
 
 import UIKit
-import Photos
+@preconcurrency import Photos
 
+//CHE lo q hay q pensar es si este delegado tiene q estar en el main thread, creo q no porq si
+//bien es usado por los VCs no se si hay q forzarlo, quizas se use por un service?
 // MARK: - AssetsManagerDelegate
+@MainActor
 public protocol AssetsManagerDelegate: AnyObject {
     
-    func assetsManager(manager: AssetsManager, authorizationStatusChanged oldStatus: PHAuthorizationStatus, newStatus: PHAuthorizationStatus)
-    func assetsManager(manager: AssetsManager, reloadedAlbumsInSection section: Int)
-    func assetsManagerFetched(manager: AssetsManager)
+    func assetsManager(authorizationStatusChanged oldStatus: PHAuthorizationStatus, newStatus: PHAuthorizationStatus)
+    func assetsManager(reloadedAlbumsInSection section: Int)
+    func assetsManagerFetched()
     
-    func assetsManager(manager: AssetsManager, insertedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath])
-    func assetsManager(manager: AssetsManager, removedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath])
-    func assetsManager(manager: AssetsManager, updatedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath])
+    func assetsManager(insertedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath])
+    func assetsManager(removedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath])
+    func assetsManager(updatedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath])
     
-    func assetsManager(manager: AssetsManager, reloadedAlbum album: PHAssetCollection, at indexPath: IndexPath)
-    func assetsManager(manager: AssetsManager, insertedAssets assets: [PHAsset], at indexPaths: [IndexPath])
-    func assetsManager(manager: AssetsManager, removedAssets assets: [PHAsset], at indexPaths: [IndexPath])
-    func assetsManager(manager: AssetsManager, updatedAssets assets: [PHAsset], at indexPaths: [IndexPath])
+    func assetsManager(reloadedAlbum album: PHAssetCollection, at indexPath: IndexPath)
+    func assetsManager(insertedAssets assets: [PHAsset], at indexPaths: [IndexPath])
+    func assetsManager(removedAssets assets: [PHAsset], at indexPaths: [IndexPath])
+    func assetsManager(updatedAssets assets: [PHAsset], at indexPaths: [IndexPath])
 }
 
 typealias AssetsFetchEntry = (albums: [PHFetchResult<PHAsset>], fetchMap:  [String: PHFetchResult<PHAsset>], albumMap: [String: PHAssetCollection])
@@ -102,29 +105,28 @@ open class AssetsManager: NSObject {
     }
 }
 
+
 // MARK: - Subscriber
 extension AssetsManager {
     
-    open func subscribe(subscriber: AssetsManagerDelegate) {
+    public func subscribe(subscriber: AssetsManagerDelegate) {
         subscribers.append(subscriber)
     }
     
-    open func unsubscribe(subscriber: AssetsManagerDelegate) {
+    public func unsubscribe(subscriber: AssetsManagerDelegate) {
         if let index = subscribers.firstIndex(where: { subscriber === $0 }) {
             subscribers.remove(at: index)
         }
     }
 
-    open func unsubscribeAll() {
+    public func unsubscribeAll() {
         subscribers.removeAll()
     }
     
-    open func notifySubscribers(_ action: @escaping ((AssetsManagerDelegate) -> Void), condition: Bool = true) {
+    public func notifySubscribers(_ action: @escaping ((AssetsManagerDelegate) -> Void), condition: Bool = true) {
         if condition {
-            DispatchQueue.main.sync {
-                for subscriber in self.subscribers {
-                    action(subscriber)
-                }
+            for subscriber in self.subscribers {
+                action(subscriber)
             }
         }
     }
@@ -132,18 +134,18 @@ extension AssetsManager {
 
 // MARK: - Observer
 extension AssetsManager {
-    open func registerObserver() {
+    public func registerObserver() {
         PHPhotoLibrary.shared().register(self)
     }
     
-    open func unregisterObserver() {
+    public func unregisterObserver() {
         PHPhotoLibrary.shared().unregisterChangeObserver(self)
     }
 }
 
 // MARK: - Permission
 extension AssetsManager {
-    open func authorize(completion: @escaping ((Bool) -> Void)) {
+  public func authorize(completion: @escaping ((Bool) -> Void)) {
         if PHPhotoLibrary.authorizationStatus() == .authorized {
             completion(true)
         } else {
@@ -177,19 +179,19 @@ extension AssetsManager {
 // MARK: - Cache
 extension AssetsManager {
     
-    open func cache(asset: PHAsset, size: CGSize) {
+    public func cache(asset: PHAsset, size: CGSize) {
         cache(assets: [asset], size: size)
     }
     
-    open func cache(assets: [PHAsset], size: CGSize) {
+    public func cache(assets: [PHAsset], size: CGSize) {
         imageManager.startCachingImages(for: assets, targetSize: size, contentMode: .aspectFill, options: nil)
     }
     
-    open func stopCache(asset: PHAsset, size: CGSize) {
+    public func stopCache(asset: PHAsset, size: CGSize) {
         stopCache(assets: [asset], size: size)
     }
     
-    open func stopCache(assets: [PHAsset], size: CGSize) {
+    public func stopCache(assets: [PHAsset], size: CGSize) {
         imageManager.stopCachingImages(for: assets, targetSize: size, contentMode: .aspectFill, options: nil)
     }
 }
@@ -197,19 +199,19 @@ extension AssetsManager {
 // MARK: - Sources
 extension AssetsManager {
     
-    open var numberOfSections: Int {
+    public var numberOfSections: Int {
         return sortedAlbumsArray.count
     }
     
-    open func numberOfAlbums(inSection: Int) -> Int {
+    public func numberOfAlbums(inSection: Int) -> Int {
         return sortedAlbumsArray[inSection].count
     }
     
-    open func numberOfAssets(at indexPath: IndexPath) -> Int {
+    public func numberOfAssets(at indexPath: IndexPath) -> Int {
         return Int(fetchMap[sortedAlbumsArray[indexPath.section][indexPath.row].localIdentifier]?.count ?? 0)
     }
     
-    open func indexPath(forAlbum target: PHAssetCollection, inAlbumsArray albumsArray: [[PHAssetCollection]]) -> IndexPath? {
+    public func indexPath(forAlbum target: PHAssetCollection, inAlbumsArray albumsArray: [[PHAssetCollection]]) -> IndexPath? {
         let section = albumSection(forType: target.assetCollectionType)
         if let row = albumsArray[section].firstIndex(of: target) {
             return IndexPath(row: row, section: section)
@@ -218,11 +220,11 @@ extension AssetsManager {
         }
     }
     
-    open func title(at indexPath: IndexPath) -> String? {
+    public func title(at indexPath: IndexPath) -> String? {
         return sortedAlbumsArray[indexPath.section][indexPath.row].localizedTitle
     }
     
-    open func imageOfAlbum(at indexPath: IndexPath, size: CGSize, isNeedDegraded: Bool = true, completion: @escaping ((UIImage?) -> Void)) -> PHImageRequestID? {
+    public func imageOfAlbum(at indexPath: IndexPath, size: CGSize, isNeedDegraded: Bool = true, completion: @escaping ((UIImage?) -> Void)) -> PHImageRequestID? {
         let album = sortedAlbumsArray[indexPath.section][indexPath.row]
         if let fetchResult = fetchMap[album.localIdentifier] {
             if let asset = pickerConfig.assetsIsScrollToBottom ? fetchResult.lastObject : fetchResult.firstObject {
@@ -252,7 +254,7 @@ extension AssetsManager {
     }
     
     @discardableResult
-    open func image(at index: Int, size: CGSize, isNeedDegraded: Bool = true, completion: @escaping ((UIImage?, Bool) -> Void)) -> PHImageRequestID {
+    public func image(at index: Int, size: CGSize, isNeedDegraded: Bool = true, completion: @escaping ((UIImage?, Bool) -> Void)) -> PHImageRequestID {
         let options = PHImageRequestOptions()
         options.isNetworkAccessAllowed = true
         options.resizeMode = .exact
@@ -272,19 +274,19 @@ extension AssetsManager {
         })
     }
     
-    open func cancelRequest(requestId: PHImageRequestID) {
+    public func cancelRequest(requestId: PHImageRequestID) {
         imageManager.cancelImageRequest(requestId)
     }
     
-    open func fetchResult(forAlbum album: PHAssetCollection) -> PHFetchResult<PHAsset>? {
+    public func fetchResult(forAlbum album: PHAssetCollection) -> PHFetchResult<PHAsset>? {
         return fetchMap[album.localIdentifier]
     }
     
-    open func album(at indexPath: IndexPath) -> PHAssetCollection {
+    public func album(at indexPath: IndexPath) -> PHAssetCollection {
         return sortedAlbumsArray[indexPath.section][indexPath.row]
     }
     
-    open func albumSection(forType type: PHAssetCollectionType) -> Int {
+    public func albumSection(forType type: PHAssetCollectionType) -> Int {
         switch type {
         case .smartAlbum:
             return 0
@@ -297,7 +299,7 @@ extension AssetsManager {
         }
     }
     
-    open func albumType(forSection section: Int) -> PHAssetCollectionType {
+    public func albumType(forSection section: Int) -> PHAssetCollectionType {
         switch section {
         case 0:
             return .smartAlbum
@@ -311,7 +313,7 @@ extension AssetsManager {
         }
     }
     
-    open func count(ofType type: PHAssetMediaType) -> Int {
+    public func count(ofType type: PHAssetMediaType) -> Int {
         if let album = self.selectedAlbum, let fetchResult = fetchMap[album.localIdentifier] {
             return fetchResult.countOfAssets(with: type)
         } else {
@@ -327,12 +329,12 @@ extension AssetsManager {
         }
     }
     
-    open func isExist(asset: PHAsset) -> Bool {
+    public func isExist(asset: PHAsset) -> Bool {
         return PHAsset.fetchAssets(withLocalIdentifiers: [asset.localIdentifier], options: nil).count > 0
     }
     
     @discardableResult
-    open func select(album newAlbum: PHAssetCollection) -> Bool {
+    public func select(album newAlbum: PHAssetCollection) -> Bool {
         if let oldAlbumIdentifier = self.selectedAlbum?.localIdentifier, oldAlbumIdentifier == newAlbum.localIdentifier {
             logi("Selected same album.")
             return false
@@ -348,7 +350,7 @@ extension AssetsManager {
         return true
     }
     
-    open func selectDefaultAlbum() {
+    public func selectDefaultAlbum() {
         self.selectedAlbum = nil
         let allAlbums = sortedAlbumsArray.flatMap { $0 }.map { $0 }
         if let defaultAlbum = self.defaultAlbum, allAlbums.contains(defaultAlbum) {
@@ -362,7 +364,7 @@ extension AssetsManager {
         }
     }
     
-    open func selectAsync(album newAlbum: PHAssetCollection, completion: @escaping (Bool, PHFetchResult<PHAsset>?) -> Void) {
+    public func selectAsync(album newAlbum: PHAssetCollection, completion: @escaping (Bool, PHFetchResult<PHAsset>?) -> Void) {
         if let oldAlbumIdentifier = self.selectedAlbum?.localIdentifier, oldAlbumIdentifier == newAlbum.localIdentifier {
             logi("Selected same album.")
             completion(false, nil)
@@ -486,22 +488,21 @@ extension AssetsManager {
             if newStatus == .limited {
                 for subscriber in self.subscribers {
                     Task { @MainActor [newStatus] in
-                        subscriber.assetsManager(manager: self, authorizationStatusChanged: oldStatus, newStatus: newStatus)
+                        subscriber.assetsManager(authorizationStatusChanged: oldStatus, newStatus: newStatus)
                     }
                 }
                 return false
             }
-        } else {
+        } else if#available(iOS 13, *) {
             newStatus = PHPhotoLibrary.authorizationStatus()
             if authorizationStatus != newStatus {
-                let oldStatus = authorizationStatus
-                authorizationStatus = newStatus
-                let authorizationworkItem = DispatchWorkItem {
-                  for subscriber in self.subscribers {
-                      subscriber.assetsManager(manager: self, authorizationStatusChanged: oldStatus, newStatus: newStatus)
-                  }
+              let oldStatus = authorizationStatus
+              authorizationStatus = newStatus
+              for subscriber in self.subscribers {
+                Task { @MainActor [newStatus] in
+                  subscriber.assetsManager(authorizationStatusChanged: oldStatus, newStatus: newStatus)
                 }
-                DispatchQueue.main.async(execute: authorizationworkItem)
+              }
             }
         }
         
@@ -544,8 +545,8 @@ extension AssetsManager {
 // MARK: - Fetch
 extension AssetsManager {
     
-    open func fetchAlbums(isRefetch: Bool = false, completion: @escaping (([[PHAssetCollection]]) -> Void)) {
-        
+    public func fetchAlbums(isRefetch: Bool = false, completion: @escaping (([[PHAssetCollection]]) -> Void)) {
+
         if isRefetch {
             selectedAlbum = nil
             isFetchedAlbums = false
@@ -555,48 +556,48 @@ extension AssetsManager {
             fetchMap.removeAll()
             albumMap.removeAll()
         }
-        
+
         resourceLoadingQueue.async { [weak self] in
             guard let `self` = self else { return }
             if !self.isFetchedAlbums {
-                
+
                 var types: [PHAssetCollectionType] = [ .smartAlbum, .album ]
-                
+
                 let smartAlbumEntry = self.fetchDefaultAlbums(forAlbumType: .smartAlbum)
                 self.fetchedAlbumsArray.append(smartAlbumEntry.fetchedAlbums)
                 self.sortedAlbumsArray.append(smartAlbumEntry.sortedAlbums)
                 self.albumsFetchArray.append(smartAlbumEntry.fetchResult)
-                
+
                 let albumEntry = self.fetchDefaultAlbums(forAlbumType: .album)
                 self.fetchedAlbumsArray.append(albumEntry.fetchedAlbums)
                 self.sortedAlbumsArray.append(albumEntry.sortedAlbums)
                 self.albumsFetchArray.append(albumEntry.fetchResult)
-                
+
                 if self.pickerConfig.albumIsShowMomentAlbums {
                     types.append(.moment)
-                    
+
                     let momentEntry = self.fetchDefaultAlbums(forAlbumType: .moment)
                     self.fetchedAlbumsArray.append(momentEntry.fetchedAlbums)
                     self.sortedAlbumsArray.append(momentEntry.sortedAlbums)
                     self.albumsFetchArray.append(momentEntry.fetchResult)
                 }
                 self.subscribers.forEach { [weak self] (delegate) in
-                    guard let `self` = self else { return }
-                    DispatchQueue.main.async {
-                        delegate.assetsManagerFetched(manager: self)
-                    }
+                  guard self != nil else { return }
+                  DispatchQueue.main.async {
+                    delegate.assetsManagerFetched()
+                  }
                 }
-                
+
                 self.fetchAllAlbums(types: types) { (result) in
                     self.fetchedAlbumsArray = result.fetchedAlbumsArray
                     self.sortedAlbumsArray = result.sortedAlbumsArray
                     self.albumsFetchArray = result.albumsFetchArray
 
                     self.subscribers.forEach { [weak self] (delegate) in
-                        guard let `self` = self else { return }
-                        DispatchQueue.main.async {
-                            delegate.assetsManagerFetched(manager: self)
-                        }
+                      guard self != nil else { return }
+                      DispatchQueue.main.async {
+                          delegate.assetsManagerFetched()
+                      }
                     }
                     self.isFetchedAlbums = true
                 }
@@ -665,7 +666,7 @@ extension AssetsManager {
       }
     }
     
-    open func fetchAssets(isRefetch: Bool = false, completion: ((PHFetchResult<PHAsset>?) -> Void)? = nil) {
+    public func fetchAssets(isRefetch: Bool = false, completion: ((PHFetchResult<PHAsset>?) -> Void)? = nil) {
         
         fetchAlbums(isRefetch: isRefetch, completion: { [weak self] _ in
             
@@ -683,7 +684,7 @@ extension AssetsManager {
     }
     
     func fetchDefaultAlbums(forAlbumType type: PHAssetCollectionType) -> (fetchedAlbums: [PHAssetCollection], sortedAlbums: [PHAssetCollection], fetchResult: PHFetchResult<PHAssetCollection>) {
-        
+      
         let fetchOption = pickerConfig.albumFetchOptions?[type]
         let albumFetchResult = PHAssetCollection.fetchAssetCollections(with: type, subtype: .any, options: fetchOption)
         var fetchedAlbums = [PHAssetCollection]()

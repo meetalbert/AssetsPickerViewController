@@ -10,7 +10,7 @@ import Photos
 
 // MARK: - PHPhotoLibraryChangeObserver & Sync
 extension AssetsManager: PHPhotoLibraryChangeObserver {
-    
+    @MainActor
     func synchronizeAlbums(changeInstance: PHChange) -> [IndexSet] {
         
         // updated index set
@@ -28,7 +28,7 @@ extension AssetsManager: PHPhotoLibraryChangeObserver {
             albumsFetchArray[section] = albumsChangeDetail.fetchResultAfterChanges
             
             guard albumsChangeDetail.hasIncrementalChanges else {
-                notifySubscribers({ $0.assetsManager(manager: self, reloadedAlbumsInSection: section) })
+                notifySubscribers({ $0.assetsManager(reloadedAlbumsInSection: section) })
                 continue
             }
             // sync removed albums
@@ -57,7 +57,8 @@ extension AssetsManager: PHPhotoLibraryChangeObserver {
         }
         return updatedIndexSets
     }
-    
+
+    @MainActor
     func synchronizeAssets(updatedAlbumIndexSets: [IndexSet], fetchMapBeforeChanges: [String: PHFetchResult<PHAsset>], changeInstance: PHChange) {
         
         let updatedIndexSets = updatedAlbumIndexSets
@@ -87,7 +88,7 @@ extension AssetsManager: PHPhotoLibraryChangeObserver {
                 guard assetsChangeDetails.hasIncrementalChanges else {
                     notifySubscribers({ subscriber in
                         if let indexPathForAlbum = self.indexPath(forAlbum: album, inAlbumsArray: self.sortedAlbumsArray) {
-                            subscriber.assetsManager(manager: self, reloadedAlbum: album, at: indexPathForAlbum)
+                            subscriber.assetsManager(reloadedAlbum: album, at: indexPathForAlbum)
                         }
                     })
                     continue
@@ -107,7 +108,7 @@ extension AssetsManager: PHPhotoLibraryChangeObserver {
                     self.fetchResult = result
                     // stop caching for removed assets
                     stopCache(assets: removedAssets, size: pickerConfig.assetCacheSize)
-                    notifySubscribers({ $0.assetsManager(manager: self, removedAssets: removedAssets, at: removedIndexes) }, condition: removedAssets.count > 0)
+                    notifySubscribers({ $0.assetsManager(removedAssets: removedAssets, at: removedIndexes) }, condition: removedAssets.count > 0)
                 }
                 // sync inserted assets
                 if let insertedIndexesSet = assetsChangeDetails.insertedIndexes {
@@ -122,7 +123,7 @@ extension AssetsManager: PHPhotoLibraryChangeObserver {
                     self.fetchResult = result
                     // start caching for inserted assets
                     cache(assets: insertedAssets, size: pickerConfig.assetCacheSize)
-                    notifySubscribers({ $0.assetsManager(manager: self, insertedAssets: insertedAssets, at: insertedIndexes) }, condition: insertedAssets.count > 0)
+                    notifySubscribers({ $0.assetsManager(insertedAssets: insertedAssets, at: insertedIndexes) }, condition: insertedAssets.count > 0)
                 }
                 // sync updated assets
                 if let updatedIndexes = assetsChangeDetails.changedIndexes?.asArray() {
@@ -134,7 +135,7 @@ extension AssetsManager: PHPhotoLibraryChangeObserver {
                     // stop caching for updated assets
                     stopCache(assets: updatedAssets, size: pickerConfig.assetCacheSize)
                     cache(assets: updatedAssets, size: pickerConfig.assetCacheSize)
-                    notifySubscribers({ $0.assetsManager(manager: self, updatedAssets: updatedAssets, at: updatedIndexes) }, condition: updatedAssets.count > 0)
+                    notifySubscribers({ $0.assetsManager(updatedAssets: updatedAssets, at: updatedIndexes) }, condition: updatedAssets.count > 0)
                 }
             }
             
@@ -153,7 +154,7 @@ extension AssetsManager: PHPhotoLibraryChangeObserver {
                 }
             }
             sortedAlbumsArray[section] = oldSortedAlbums
-            notifySubscribers({ $0.assetsManager(manager: self, removedAlbums: removedInfo.albums, at: removedInfo.indexPaths) }, condition: removedInfo.indexPaths.count > 0)
+            notifySubscribers({ $0.assetsManager(removedAlbums: removedInfo.albums, at: removedInfo.indexPaths) }, condition: removedInfo.indexPaths.count > 0)
             
             /* 2. find & notify inserted albums. */
             let insertedInfo = insertedIndexPaths(from: newSortedAlbums, oldAlbums: oldSortedAlbums, section: section)
@@ -164,7 +165,7 @@ extension AssetsManager: PHPhotoLibraryChangeObserver {
                 }
             }
             sortedAlbumsArray[section] = newSortedAlbums
-            notifySubscribers({ $0.assetsManager(manager: self, insertedAlbums: insertedInfo.albums, at: insertedInfo.indexPaths) }, condition: insertedInfo.indexPaths.count > 0)
+            notifySubscribers({ $0.assetsManager(insertedAlbums: insertedInfo.albums, at: insertedInfo.indexPaths) }, condition: insertedInfo.indexPaths.count > 0)
             
             // check logic
             if oldSortedAlbums.count == newSortedAlbums.count {
@@ -189,22 +190,24 @@ extension AssetsManager: PHPhotoLibraryChangeObserver {
                     sortedUpdatedAlbums.append(updatedAlbum)
                 }
             }
-            notifySubscribers({ $0.assetsManager(manager: self, updatedAlbums: sortedUpdatedAlbums, at: sortedUpdatedIndexPaths) }, condition: sortedUpdatedAlbums.count > 0)
+            notifySubscribers({ $0.assetsManager(updatedAlbums: sortedUpdatedAlbums, at: sortedUpdatedIndexPaths) }, condition: sortedUpdatedAlbums.count > 0)
         }
     }
 
     public func photoLibraryDidChange(_ changeInstance: PHChange) {
         guard notifyIfAuthorizationStatusChanged() else {
-            logw("Does not have access to photo library.")
-            return
+          logw("Does not have access to photo library.")
+          return
         }
         let fetchMapBeforeChanges = fetchMap
+      Task{ @MainActor in
         let updatedAlbumIndexSets = synchronizeAlbums(changeInstance: changeInstance)
         synchronizeAssets(
-            updatedAlbumIndexSets: updatedAlbumIndexSets,
-            fetchMapBeforeChanges: fetchMapBeforeChanges,
-            changeInstance: changeInstance
+          updatedAlbumIndexSets: updatedAlbumIndexSets,
+          fetchMapBeforeChanges: fetchMapBeforeChanges,
+          changeInstance: changeInstance
         )
+      }
     }
     
     public func removedIndexPaths(from newAlbums: [PHAssetCollection], oldAlbums: [PHAssetCollection], section: Int) -> (indexPaths: [IndexPath], albums: [PHAssetCollection]) {

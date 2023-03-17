@@ -343,7 +343,7 @@ extension AssetsAlbumViewController {
 // MARK: - AssetsManagerDelegate
 extension AssetsAlbumViewController: AssetsManagerDelegate {
     
-    public func assetsManagerFetched(manager: AssetsManager) {
+    public func assetsManagerFetched() {
         collectionView.reloadData()
         let isFetchedAlbums = AssetsManager.shared.isFetchedAlbums
         if isFetchedAlbums {
@@ -355,34 +355,34 @@ extension AssetsAlbumViewController: AssetsManagerDelegate {
         }
     }
     
-    public func assetsManager(manager: AssetsManager, authorizationStatusChanged oldStatus: PHAuthorizationStatus, newStatus: PHAuthorizationStatus) {}
+    public func assetsManager(authorizationStatusChanged oldStatus: PHAuthorizationStatus, newStatus: PHAuthorizationStatus) {}
     
-    public func assetsManager(manager: AssetsManager, reloadedAlbumsInSection section: Int) {
+    public func assetsManager(reloadedAlbumsInSection section: Int) {
         logi("reloadedAlbumsInSection section: \(section)")
         collectionView.reloadSections(IndexSet(integer: section))
     }
     
-    public func assetsManager(manager: AssetsManager, insertedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {
+    public func assetsManager(insertedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {
         logi("insertedAlbums at indexPaths: \(indexPaths)")
         collectionView.insertItems(at: indexPaths)
     }
     
-    public func assetsManager(manager: AssetsManager, removedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {
+    public func assetsManager(removedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {
         logi("removedAlbums at indexPaths: \(indexPaths)")
         collectionView.deleteItems(at: indexPaths)
     }
     
-    public func assetsManager(manager: AssetsManager, updatedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {
+    public func assetsManager(updatedAlbums albums: [PHAssetCollection], at indexPaths: [IndexPath]) {
         logi("updatedAlbums at indexPaths: \(indexPaths)")
         collectionView.reloadItems(at: indexPaths)
     }
     
-    public func assetsManager(manager: AssetsManager, reloadedAlbum album: PHAssetCollection, at indexPath: IndexPath) {
+    public func assetsManager(reloadedAlbum album: PHAssetCollection, at indexPath: IndexPath) {
         logi("reloadedAlbum at indexPath: \(indexPath)")
         collectionView.reloadItems(at: [indexPath])
     }
     
-    public func assetsManager(manager: AssetsManager, insertedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {}
-    public func assetsManager(manager: AssetsManager, removedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {}
-    public func assetsManager(manager: AssetsManager, updatedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {}
+    public func assetsManager(insertedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {}
+    public func assetsManager(removedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {}
+    public func assetsManager(updatedAssets assets: [PHAsset], at indexPaths: [IndexPath]) {}
 }
