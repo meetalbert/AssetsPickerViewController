@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "AssetsPickerViewController",
     defaultLocalization: "en",
-    platforms: [.iOS(.v10)],
+    platforms: [.iOS(.v13)],
     products: [
         .library(
             name: "AssetsPickerViewController",
@@ -20,7 +20,8 @@ let package = Package(
             dependencies: ["SnapKit"],
             path: "AssetsPickerViewController",
             sources: ["Classes"],
-            resources: [.process("Assets")]
+            resources: [.process("Assets")],
+            swiftSettings: [.unsafeFlags(["-Xfrontend", "-warn-concurrency"])]
         )
     ],
     swiftLanguageVersions: [.v4_2, .v5]
